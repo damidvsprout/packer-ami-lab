@@ -1,0 +1,41 @@
+
+name: Build Linux AMI
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-ami:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Initialize Packer
+        run: packer init linux-ami.pkr.hcl
+
+      - name: Format check
+        run: packer fmt -check linux-ami.pkr.hcl
+
+      - name: Validate template
+        run: packer validate -var "aws_region=${{ vars.AWS_REGION }}" linux-ami.pkr.hcl
+
+      - name: Build AMI
+        run: packer build -var "aws_region=${{ vars.AWS_REGION }}" linux-ami.pkr.hcl

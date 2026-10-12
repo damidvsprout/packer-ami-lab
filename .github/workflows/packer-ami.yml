@@ -42,14 +42,14 @@ jobs:
         with:
           version: "1.14.2"
 
-      # Step 6: Initialize plugins
-      - name: Initialize Packer
-        run: packer init .
+       - name: Initialize Packer
+        working-directory: ${{ github.workspace }}
+        run: packer init packer.pkr.hcl
 
-      # Step 7: Validate template
       - name: Validate Packer template
+        working-directory: ${{ github.workspace }}
         run: packer validate packer.pkr.hcl
 
-      # Step 8: Build AMI
       - name: Build Linux AMI
+        working-directory: ${{ github.workspace }}
         run: packer build packer.pkr.hcl

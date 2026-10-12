@@ -20,6 +20,14 @@ jobs:
       - name: Check runner time
         run: date -u
 
+      - name: Debug AWS configuration
+        env:
+          ROLE_ARN: arn:aws:iam::449355864501:role/GitHubPackerRole
+          AWS_REGION: ap-south-1
+        run: |
+          echo "Role ARN is configured: $([ -n "$ROLE_ARN" ] && echo yes || echo no)"
+          echo "AWS region: $AWS_REGION"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

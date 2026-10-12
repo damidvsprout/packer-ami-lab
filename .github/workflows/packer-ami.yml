@@ -13,11 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
+      # Step 1: Download repository files
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Configure AWS using GitHub Secrets
+      # Step 2: Verify Packer template exists
+      - name: Check Packer template
+        run: |
+          pwd
+          ls -la
+          test -f packer.pkr.hcl
+
+      # Step 3: Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -25,24 +32,24 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
 
-      # Step 3: Verify AWS authentication
+      # Step 4: Verify AWS authentication
       - name: Verify AWS authentication
         run: aws sts get-caller-identity
 
-      # Step 4: Install Packer
+      # Step 5: Install Packer
       - name: Install Packer
         uses: hashicorp/setup-packer@main
         with:
           version: "1.14.2"
 
-      # Step 5: Initialize Packer plugins
+      # Step 6: Initialize plugins
       - name: Initialize Packer
         run: packer init .
 
-      # Step 6: Validate the Packer template
+      # Step 7: Validate template
       - name: Validate Packer template
-        run: packer validate .
+        run: packer validate packer.pkr.hcl
 
-      # Step 7: Build the AMI
+      # Step 8: Build AMI
       - name: Build Linux AMI
-        run: packer build .
+        run: packer build packer.pkr.hcl

@@ -1,5 +1,5 @@
 
-name: Create Packer AMI
+name: Build Linux AMI
 
 on:
   workflow_dispatch:
@@ -10,17 +10,36 @@ permissions:
 
 jobs:
   build-ami:
+    name: Build Packer AMI
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check runner time
+        run: date -u
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::449355864501:role/GitHubPackerRole
           aws-region: ap-south-1
+          audience: sts.amazonaws.com
 
       - name: Verify AWS authentication
         run: aws sts get-caller-identity
+
+      - name: Install Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: "latest"
+
+      - name: Initialize Packer
+        run: packer init .
+
+      - name: Validate Packer template
+        run: packer validate .
+
+      - name: Build Linux AMI
+        run: packer build .

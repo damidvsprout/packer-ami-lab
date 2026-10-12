@@ -5,7 +5,6 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -14,35 +13,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Step 2: Configure AWS using GitHub Secrets
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::449355864501:role/GitHubPackerRole
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
-          audience: sts.amazonaws.com
-          role-session-name: GitHubPackerBuild
 
+      # Step 3: Verify AWS authentication
       - name: Verify AWS authentication
         run: aws sts get-caller-identity
 
+      # Step 4: Install Packer
       - name: Install Packer
         uses: hashicorp/setup-packer@main
         with:
           version: "1.14.2"
 
-      - name: Check Packer template
-        run: |
-          ls -la
-          find . -maxdepth 2 -name '*.pkr.hcl' -type f
-
+      # Step 5: Initialize Packer plugins
       - name: Initialize Packer
         run: packer init .
 
+      # Step 6: Validate the Packer template
       - name: Validate Packer template
         run: packer validate .
 
+      # Step 7: Build the AMI
       - name: Build Linux AMI
         run: packer build .

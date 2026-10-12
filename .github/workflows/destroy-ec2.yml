@@ -2,6 +2,7 @@
 name: Destroy Packer AMI EC2
 
 on:
+  push:
   workflow_dispatch:
 
 permissions:
